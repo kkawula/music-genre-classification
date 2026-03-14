@@ -4,4 +4,13 @@ version = "0.1.0"
 description = "Classify music tracks into genres and analyze which audio features are most discriminative. MFCC + classical ML baseline; CNN on spectrograms"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.3",
+    "pandas>=3.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+]

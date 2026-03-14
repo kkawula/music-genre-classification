@@ -46,3 +46,6 @@ Deliverables
 * **Baseline:** Classical Machine Learning (e.g., Random Forest or XGBoost) trained on Mel-Frequency Cepstral Coefficients (MFCCs).
 * **Deep Learning:** CNNs trained on 2D Mel-Spectrogram representations.
 * **Comparison:** A benchmarking study of **feature-based** (hand-crafted) vs. **end-to-end** (learned representation) approaches.
+
+### 3. Paper
+* https://arxiv.org/abs/1612.01840
