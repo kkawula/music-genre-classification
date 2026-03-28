@@ -1,8 +1,6 @@
 # Music Genre Classification from Audio Features
 
-
-
-# Development setup
+## Development setup
 
 ```bash
 uv venv
