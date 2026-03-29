@@ -11,3 +11,5 @@ wheels/
 
 # Data
 data/fma_*
+data/mfcc_features.csv
+data/spectrograms
