@@ -5,8 +5,10 @@ description = "Classify music tracks into genres and analyze which audio feature
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "ipywidgets>=8.1.8",
     "jinja2>=3.1.6",
     "librosa>=0.11.0",
+    "lightgbm>=4.6.0",
     "matplotlib>=3.10.8",
     "numpy>=2.4.3",
     "pandas>=3.0.1",
@@ -15,6 +17,7 @@ dependencies = [
     "soundfile<0.13",
     "torch>=2.11.0",
     "tqdm>=4.67.3",
+    "transformers>=5.5.3",
 ]
 
 [dependency-groups]
