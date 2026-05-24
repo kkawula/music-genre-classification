@@ -115,7 +115,7 @@ Classical ML training and inference ran on CPU. CLAP embedding extraction and CN
 | LightGBM            | CLAP (512d)     | random | medium  | 0.478 | 0.927 |
 | CNN                 | Mel spectrogram | random | medium  | 0.323 | 0.874 |
 
-Full results across all 50 configurations are in `data/results.parquet`.
+Full results across all 50 configurations are in `results/results.parquet`.
 
 ### F. Per-genre F1 (SVM + CLAP, small/random)
 
@@ -143,11 +143,11 @@ Full results across all 50 configurations are in `data/results.parquet`.
 
 - [ ] Python 3.12 + uv installed
 - [ ] `uv sync` completed
-- [ ] `data/download_data.sh` run (fma_small + fma_metadata extracted)
+- [ ] `scripts/download_data.sh` run (fma_small + fma_metadata extracted)
 - [ ] `data/mfcc_features_small.csv` present (or `COMPUTE_MFCC=True` to regenerate)
 - [ ] `data/clap_features_small.csv` present (or `COMPUTE_CLAP_FEATURES=True` to regenerate)
 - [ ] `notebook.ipynb` executed top-to-bottom without errors
-- [ ] `data/results.parquet` produced
+- [ ] `results/results.parquet` produced
 
 For medium-dataset experiments, additionally:
 

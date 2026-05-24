@@ -109,7 +109,7 @@ Ties SVM on CLAP features and is faster at inference. The better choice for larg
 | Epochs         | 20 (small), 15 (medium)                                                 |
 | Batch size     | 32                                                                      |
 | Training time  | ~75 s (small), ~188 s (medium) on CPU                                  |
-| Weights saved  | `data/cnn_{small,medium}.pt`                                            |
+| Weights saved  | `models/cnn_{small,medium}.pt`                                          |
 
 Performance:
 

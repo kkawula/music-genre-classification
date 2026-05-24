@@ -1,18 +1,31 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
+*.py[cod]
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+.eggs/
 
 # Virtual environments
-.venv
+.venv/
+venv/
+env/
 
-# Data
-data/fma_*
-data/spectrograms_small/
-data/spectrograms_medium/
-data/spectrograms/
+# Jupyter
+.ipynb_checkpoints/
+
+# Data — heavy source archives and extracted audio (generated locally, not tracked)
+data/fma_*/
+data/*.zip
+data/spectrograms_*/
+
+# OS
 .DS_Store
+Thumbs.db
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

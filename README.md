@@ -22,17 +22,22 @@ Full analysis and recommendations are in [`docs/report.md`](docs/report.md). Per
 ```
 .
 ├── notebook.ipynb          # Main analysis (sections 1–7)
-├── data/
-│   ├── download_data.sh    # Data download script
+├── scripts/
+│   └── download_data.sh    # Data download script
+├── data/                   # Raw features (Git LFS); heavy audio dirs gitignored
 │   ├── mfcc_features_{small,medium}.csv
-│   ├── clap_features_{small,medium}.csv
-│   ├── cnn_{small,medium}.pt
-│   └── results.parquet
-└── docs/
-    ├── overview.md         # Assignment brief, design decisions, deliverable index
-    ├── data-dictionary.md  # Dataset background, feature specs, splits, cleaning
-    ├── model-card.md       # Per-model specs, performance, limitations
-    └── report.md           # Executive summary and technical appendix
+│   └── clap_features_{small,medium}.csv
+├── models/                 # Trained CNN weights
+│   ├── cnn_small.pt
+│   └── cnn_medium.pt
+├── results/
+│   └── results.parquet     # All experiment results
+├── docs/
+│   ├── overview.md         # Assignment brief, design decisions, deliverable index
+│   ├── data-dictionary.md  # Dataset background, feature specs, splits, cleaning
+│   ├── model-card.md       # Per-model specs, performance, limitations
+│   └── report.md           # Executive summary and technical appendix
+└── LICENSE
 ```
 
 ## Setup
@@ -48,12 +53,12 @@ uv sync
 ## Data
 
 ```bash
-./data/download_data.sh     # fma_metadata + fma_small (~7.5 GB)
+./scripts/download_data.sh  # fma_metadata + fma_small (~7.5 GB)
 ```
 
 For medium-dataset experiments, download `fma_medium.zip` from the [FMA releases page](https://github.com/mdeff/fma) and extract into `data/`.
 
-Pre-computed features (`mfcc_features_*.csv`, `clap_features_*.csv`) and model weights (`cnn_*.pt`) are tracked with Git LFS.
+Pre-computed features (`mfcc_features_*.csv`, `clap_features_*.csv`) are tracked with Git LFS. CNN weights (`models/cnn_*.pt`) and results (`results/results.parquet`) are committed directly.
 
 ## Running the notebook
 

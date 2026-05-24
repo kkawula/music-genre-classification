@@ -2,7 +2,7 @@
 
 ## Assignment
 
-This project was built for an end-to-end data science course. The topic is music genre classification from audio features using the Free Music Archive (FMA) dataset. The goal is to classify tracks into top-level genres and identify which audio representations are most discriminative.
+This project was built for an end-to-end data exploration course. The topic is music genre classification from audio features using the Free Music Archive (FMA) dataset. The goal is to classify tracks into top-level genres and identify which audio representations are most discriminative.
 
 The pipeline was required to cover:
 
@@ -30,13 +30,13 @@ The notebook (`notebook.ipynb`) implements all nine pipeline steps. It benchmark
 | Deliverable            | Location                                        |
 | ---------------------- | ----------------------------------------------- |
 | Notebook               | `notebook.ipynb`                                |
-| Download script        | `data/download_data.sh`                         |
+| Download script        | `scripts/download_data.sh`                      |
 | Data dictionary        | [`docs/data-dictionary.md`](data-dictionary.md) |
 | Model card             | [`docs/model-card.md`](model-card.md)           |
 | Report                 | [`docs/report.md`](report.md)                   |
 | Pre-computed features  | `data/` (Git LFS)                               |
-| Trained model weights  | `data/cnn_{small,medium}.pt`                    |
-| All experiment results | `data/results.parquet`                          |
+| Trained model weights  | `models/cnn_{small,medium}.pt`                  |
+| All experiment results | `results/results.parquet`                       |
 
 ## Design decisions
 
