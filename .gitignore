@@ -11,7 +11,8 @@ wheels/
 
 # Data
 data/fma_*
-data/spectrograms_small
-data/spectrograms_medium
-
+data/spectrograms_small/
+data/spectrograms_medium/
+data/spectrograms/
 .DS_Store
+
