@@ -5,6 +5,7 @@ description = "Classify music tracks into genres and analyze which audio feature
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastparquet>=2026.5.0",
     "ipywidgets>=8.1.8",
     "jinja2>=3.1.6",
     "jupyterlab>=4.5.6",

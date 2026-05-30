@@ -4,33 +4,33 @@
 
 ## Executive summary
 
-This project evaluates automated genre classification on the Free Music Archive (FMA), a dataset of openly licensed music spanning 7–15 top-level genres. The question was simple: which combination of audio features and learning algorithm works best, and what does it cost to get there?
+This project evaluates automated genre classification on the Free Music Archive (FMA), a dataset of openly licensed music spanning 7–15 top-level genres — which combination of audio features and algorithm works best, and what does it cost?
 
 ### What we found
 
-**CLAP embeddings are the clear winner.** A 512-dimensional embedding from the `laion/clap-htsat-unfused` model reaches macro F1 = 0.69 on the 7-genre small dataset, compared to 0.64 for the 518-dimensional FMA feature set and 0.56 for MFCCs. The gap comes despite requiring no domain-specific audio engineering — the model was pre-trained on 630k+ audio-text pairs and transfers well to genre labels.
+**CLAP embeddings are the clear winner.** A 512-dimensional embedding from the `laion/clap-htsat-unfused` model reaches macro F1 = 0.68 on the 7-genre small dataset, compared to 0.62 for the 518-dimensional FMA feature set and 0.53 for MFCCs. The gap comes despite requiring no domain-specific audio engineering — the model was pre-trained on 630k+ audio-text pairs and transfers well to genre labels.
 
-**Classical ML beats the CNN.** SVM and LightGBM with CLAP features reach F1 = 0.687 in 4–8 seconds of training. The CNN on mel spectrograms reaches 0.50 after 75 seconds. The 6,997-track small dataset is simply too small for the CNN to exploit its capacity. On the 23,634-track medium dataset, the gap narrows slightly (CNN reaches 0.32 vs. classical ML's 0.49), but classical models still dominate.
+**Classical ML beats the CNN.** SVM and LightGBM with CLAP features reach F1 = 0.678 and 0.673 in 6–10 seconds of training. The CNN on mel spectrograms reaches 0.50 after 81 seconds. The 6,997-track small dataset is simply too small for the CNN to exploit its capacity. On the 23,634-track medium dataset, the gap narrows slightly (CNN reaches 0.34 vs. classical ML's 0.49), but classical models still dominate.
 
-**The time-based split tells a different story.** Random 80/20 splits inflate reported performance. Switching to a time-ordered split — training on older tracks, testing on newer ones — drops F1 by 2–8 pp. CLAP is the most robust to this shift (−2 pp); MFCC and full FMA features degrade more (−5–8 pp). The random-split numbers are the optimistic ceiling, not the deployment baseline.
+**The time-based split tells a different story.** Random 80/20 splits inflate reported performance. Switching to a time-ordered split — training on older tracks, testing on newer ones — drops F1 by 1–7 pp. CLAP is the most robust to this shift (< 3 pp); MFCC and full FMA features degrade more (−4–7 pp). The random-split numbers are the optimistic ceiling, not the deployment baseline.
 
-**Pop is genuinely hard.** Across every model and feature set, Pop scores the lowest per-class F1: 0.40 with the best configuration. The other six genres sit between 0.62 and 0.79. Pop bleeds into Electronic, Rock, and Folk at its edges, and no amount of feature engineering resolves that without cleaner label boundaries.
+**Pop is genuinely hard.** Across every model and feature set, Pop scores the lowest per-class F1: 0.39 with the best configuration. The other six genres sit between 0.62 and 0.78. Pop bleeds into Electronic, Rock, and Folk at its edges, and no amount of feature engineering resolves that without cleaner label boundaries.
 
-**Scaling to medium made things harder, not easier.** F1 drops from 0.69 (small, 7 genres) to 0.49 (medium, 15 genres) despite having 3× more training data. The AUROC stays high (0.94), so the models still rank tracks reasonably — they just struggle to commit to the correct label when the genre space includes Blues, Country, Easy Listening, and Soul-RnB alongside the core eight. Those minority genres have few examples and overlap substantially.
+**Scaling to medium made things harder, not easier.** F1 drops from 0.68 (small, 7 genres) to 0.49 (medium, 15 genres) despite having 3× more training data. The AUROC stays high (0.94), so the models still rank tracks reasonably — they just struggle to commit to the correct label when the genre space includes Blues, Country, Easy Listening, and Soul-RnB alongside the core eight. Those minority genres have few examples and overlap substantially.
 
 ### Recommendations
 
-**Use CLAP embeddings.** Pre-compute them once with `laion/clap-htsat-unfused` (48 kHz input, 512-d output). The compute is a one-time offline cost. Every subsequent genre prediction is a forward pass through a small classifier.
+**Use CLAP embeddings.** Pre-compute with `laion/clap-htsat-unfused` (48 kHz input, 512-d output) once; every genre prediction after that is just a forward pass through a small classifier.
 
-**Deploy LightGBM rather than SVM at scale.** Both reach the same F1 with CLAP, but LightGBM trains faster as the catalogue grows, handles incremental re-training more easily, and produces SHAP values for per-track explanations. SVM with RBF kernel becomes expensive above ~20k samples.
+**Deploy LightGBM rather than SVM at scale.** LightGBM comes within 1 pp of SVM's F1 on CLAP features, handles incremental re-training more easily, and produces SHAP values for per-track explanations. SVM with RBF kernel becomes expensive above ~20k samples.
 
-**Fix the Pop label before adding model complexity.** Its F1 of 0.40 is unlikely to improve without either cleaner annotation or a hierarchical approach (binary Pop detector, then sub-genre). Adding more data or tuning hyperparameters will not resolve a label boundary problem.
+**Fix the Pop label before adding model complexity.** Its F1 of 0.39 is unlikely to improve without either cleaner annotation or a hierarchical approach (binary Pop detector, then sub-genre). Adding more data or tuning hyperparameters will not resolve a label boundary problem.
 
-**Report time-split metrics in production monitoring.** The 2–8 pp gap between random and time-split F1 is the realistic degradation as the catalogue adds newer tracks. Use the time-split figure when setting expectations with stakeholders.
+**Report time-split metrics in production monitoring.** The 1–7 pp gap between random and time-split F1 is what to expect as the catalogue adds newer tracks. Use the time-split number when setting expectations with stakeholders.
 
 **Curate before scaling.** The performance drop from small to medium is mostly about poorly-separated minority genres, not model capacity. A curated dataset of 5–10k balanced tracks per genre would probably outperform raw scaling to 25k imbalanced ones.
 
-**Fine-tuning CLAP is the logical next step.** The current pipeline uses frozen embeddings. End-to-end fine-tuning on FMA-labelled audio would likely improve discrimination between adjacent genres (Electronic vs. Experimental, Folk vs. International). It requires GPU infrastructure that was outside this project's scope.
+**Fine-tuning CLAP would likely help most.** The current pipeline uses frozen embeddings. End-to-end fine-tuning on FMA-labelled audio would probably improve discrimination between adjacent genres (Electronic vs. Experimental, Folk vs. International), though it requires GPU infrastructure that was outside this project's scope.
 
 ### Limitations
 
@@ -66,7 +66,7 @@ See [`data-dictionary.md`](data-dictionary.md) for column descriptions and featu
 
 **Mel spectrogram (CNN input):** Log-mel spectrograms at shape (1, 128, 256), representing the first 6 seconds of each track. Per-spectrogram z-score normalisation is applied at load time.
 
-All feature vectors for classical ML are reduced to 100 components via KernelPCA (RBF kernel, fit on training split only) for small datasets, or standard PCA for medium datasets above 15k training samples.
+All feature vectors for classical ML are reduced to 100 components via PCA (fit on training split only).
 
 ### C. Models and hyperparameter search
 
@@ -102,18 +102,18 @@ Classical ML training and inference ran on CPU. CLAP embedding extraction and CN
 
 | Model               | Feature set     | Split  | Dataset | F1    | AUROC |
 | ------------------- | --------------- | ------ | ------- | ----- | ----- |
-| SVM                 | CLAP (512d)     | random | small   | 0.687 | 0.925 |
-| LightGBM            | CLAP (512d)     | random | small   | 0.687 | 0.920 |
-| Random Forest       | CLAP (512d)     | random | small   | 0.672 | 0.920 |
-| Logistic Regression | CLAP (512d)     | random | small   | 0.672 | 0.920 |
-| SVM                 | CLAP (512d)     | time   | small   | 0.667 | 0.911 |
-| Logistic Regression | CLAP (512d)     | time   | small   | 0.656 | 0.910 |
-| SVM                 | Full (518d)     | random | small   | 0.640 | 0.897 |
-| SVM                 | MFCC (140d)     | random | small   | 0.564 | 0.869 |
-| CNN                 | Mel spectrogram | random | small   | 0.502 | 0.859 |
+| SVM                 | CLAP (512d)     | random | small   | 0.678 | 0.925 |
+| LightGBM            | CLAP (512d)     | random | small   | 0.673 | 0.918 |
+| Random Forest       | CLAP (512d)     | random | small   | 0.667 | 0.919 |
+| Logistic Regression | CLAP (512d)     | random | small   | 0.658 | 0.917 |
+| SVM                 | CLAP (512d)     | time   | small   | 0.651 | 0.910 |
+| Logistic Regression | CLAP (512d)     | time   | small   | 0.647 | 0.908 |
+| SVM                 | Full (518d)     | random | small   | 0.619 | 0.897 |
+| SVM                 | MFCC (140d)     | random | small   | 0.534 | 0.852 |
+| CNN                 | Mel spectrogram | random | small   | 0.498 | 0.853 |
 | Logistic Regression | CLAP (512d)     | random | medium  | 0.494 | 0.944 |
 | LightGBM            | CLAP (512d)     | random | medium  | 0.478 | 0.927 |
-| CNN                 | Mel spectrogram | random | medium  | 0.323 | 0.874 |
+| CNN                 | Mel spectrogram | random | medium  | 0.336 | 0.883 |
 
 Full results across all 50 configurations are in `results/results.parquet`.
 
@@ -121,29 +121,29 @@ Full results across all 50 configurations are in `results/results.parquet`.
 
 | Genre         | F1    |
 | ------------- | ----- |
-| Hip-Hop       | 0.795 |
-| International | 0.780 |
-| Rock          | 0.762 |
-| Folk          | 0.742 |
-| Electronic    | 0.714 |
-| Experimental  | 0.621 |
-| Pop           | 0.397 |
+| Hip-Hop       | 0.776 |
+| International | 0.772 |
+| Rock          | 0.757 |
+| Folk          | 0.725 |
+| Electronic    | 0.705 |
+| Experimental  | 0.625 |
+| Pop           | 0.388 |
 
 ### G. Time-split degradation (small dataset)
 
 | Feature set | Model    | Random F1 | Time F1 | Delta  |
 | ----------- | -------- | --------- | ------- | ------ |
-| Full (518d) | SVM      | 0.640     | 0.558   | −0.083 |
-| MFCC (140d) | SVM      | 0.564     | 0.499   | −0.065 |
-| Full (518d) | LightGBM | 0.579     | 0.517   | −0.062 |
-| CLAP (512d) | SVM      | 0.687     | 0.667   | −0.021 |
-| CLAP (512d) | LR       | 0.672     | 0.656   | −0.016 |
+| Full (518d) | LightGBM | 0.594     | 0.528   | −0.065 |
+| Full (518d) | SVM      | 0.619     | 0.558   | −0.061 |
+| MFCC (140d) | SVM      | 0.534     | 0.493   | −0.041 |
+| CLAP (512d) | SVM      | 0.678     | 0.651   | −0.027 |
+| CLAP (512d) | LightGBM | 0.673     | 0.661   | −0.012 |
 
 ### H. Reproduction checklist
 
 - [ ] Python 3.12 + uv installed
 - [ ] `uv sync` completed
-- [ ] `scripts/download_data.sh` run (fma_small + fma_metadata extracted)
+- [ ] `scripts/download-data.sh` run (fma_small + fma_metadata extracted)
 - [ ] `data/mfcc_features_small.csv` present (or `COMPUTE_MFCC=True` to regenerate)
 - [ ] `data/clap_features_small.csv` present (or `COMPUTE_CLAP_FEATURES=True` to regenerate)
 - [ ] `notebook.ipynb` executed top-to-bottom without errors
@@ -151,5 +151,5 @@ Full results across all 50 configurations are in `results/results.parquet`.
 
 For medium-dataset experiments, additionally:
 
-- [ ] `fma_medium.zip` extracted to `data/fma_medium/`
+- [ ] `scripts/download-medium.sh` run (fma_medium extracted)
 - [ ] `data/mfcc_features_medium.csv` and `data/clap_features_medium.csv` present
