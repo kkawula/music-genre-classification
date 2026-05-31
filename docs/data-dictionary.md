@@ -2,7 +2,7 @@
 
 ## Free Music Archive (FMA)
 
-The [Free Music Archive](https://github.com/mdeff/fma) is a publicly available dataset of openly licensed music tracks with rich metadata. This project uses two of its subsets.
+The [Free Music Archive](https://github.com/mdeff/fma) is a publicly available dataset of openly licensed music tracks with per-track and per-album metadata. This project uses two of its subsets.
 
 ### Background
 
@@ -151,7 +151,7 @@ Stored in: `data/spectrograms_{small,medium}/` (generated locally; not tracked i
 
 ## Dimensionality reduction
 
-All feature vectors are reduced to **100 components** before classical ML training using KernelPCA (RBF kernel) for small datasets, or standard PCA for medium datasets (above 15,000 training samples). The reducer is fitted on the training split only to prevent data leakage.
+All feature vectors are reduced to **100 components** before classical ML training using standard PCA. The reducer is fitted on the training split only to prevent data leakage.
 
 ---
 

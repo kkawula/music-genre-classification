@@ -30,7 +30,7 @@ The notebook (`notebook.ipynb`) implements all nine pipeline steps. It benchmark
 | Deliverable            | Location                                        |
 | ---------------------- | ----------------------------------------------- |
 | Notebook               | `notebook.ipynb`                                |
-| Download script        | `scripts/download_data.sh`                      |
+| Download script        | `scripts/download-data.sh`                      |
 | Data dictionary        | [`docs/data-dictionary.md`](data-dictionary.md) |
 | Model card             | [`docs/model-card.md`](model-card.md)           |
 | Report                 | [`docs/report.md`](report.md)                   |
@@ -40,13 +40,13 @@ The notebook (`notebook.ipynb`) implements all nine pipeline steps. It benchmark
 
 ## Design decisions
 
-**CLAP over MFCC as the primary feature.** The assignment suggested MFCCs as a baseline, which they are - but CLAP embeddings from a pre-trained audio-language model turned out to be considerably stronger (F1 = 0.69 vs. 0.56 for MFCC, on the small dataset). Both are in the notebook; CLAP is recommended for any practical use.
+**CLAP over MFCC as the primary feature.** The assignment suggested MFCCs as a baseline, which they are - but CLAP embeddings from a pre-trained audio-language model turned out to be noticeably stronger (F1 = 0.68 vs. 0.53 for MFCC, on the small dataset). Both are in the notebook; CLAP is recommended for any practical use.
 
 **Classical ML over CNN.** The assignment framed CNN on spectrograms as the "deep learning" comparison. On this dataset size, classical ML with CLAP features dominates. The CNN section is included as required, but the gap is large enough that it is not a close call.
 
-**Two splits, not one.** The assignment called for a time-aware split where relevant. Genre classification is not obviously time-dependent, but the FMA dataset does have upload timestamps, and the time-split results show a real 2–8 pp F1 drop compared to random splits. Both are reported throughout.
+**Two splits, not one.** The assignment called for a time-aware split where relevant. Genre classification is not obviously time-dependent, but the FMA dataset does have upload timestamps, and the time-split results show a real 1–7 pp F1 drop compared to random splits. Both are reported throughout.
 
-**KernelPCA over PCA.** KernelPCA (RBF kernel, 100 components) is used for small datasets; standard PCA is used for medium datasets above 15k training samples where the kernel approach becomes too slow.
+**PCA for dimensionality reduction.** All feature vectors are reduced to 100 components using standard PCA, fit on the training split only to prevent leakage.
 
 ## Evaluation criteria
 
