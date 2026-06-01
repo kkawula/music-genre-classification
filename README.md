@@ -11,9 +11,9 @@ Best overall: SVM + CLAP embeddings, small dataset, random split.
 | CLAP (512d)     | SVM        | 0.678    | 0.925       |
 | Full FMA (518d) | SVM        | 0.619    | 0.897       |
 | MFCC (140d)     | SVM        | 0.534    | 0.852       |
-| Mel spectrogram | CNN        | 0.498    | 0.853       |
+| Mel spectrogram | CNN        | 0.503    | 0.858       |
 
-CLAP embeddings beat hand-crafted features by 6–14 pp F1 with no domain-specific engineering. SVM and LightGBM closely match the top result and beat the CNN at a fraction of the training time (6–10 s vs. 81 s on CPU). Switching to a time-ordered split drops F1 by 1–7 pp, which is the more realistic figure for production. Pop is the hardest genre (F1 = 0.39); Hip-Hop and International are the easiest (F1 ≈ 0.77).
+CLAP embeddings beat hand-crafted features by 6–14 pp F1 with no audio engineering. SVM and LightGBM match the top result in 6–10 seconds; the CNN takes 75 seconds on GPU and still falls 17 pp short. A time-ordered split drops classical model F1 by 1–7 pp — the more realistic production estimate. Pop is the hardest genre (F1 = 0.39); Hip-Hop and International are easiest (F1 ≈ 0.77).
 
 Full analysis and recommendations are in [`docs/report.md`](docs/report.md). Per-model details, limitations, and deployment notes are in [`docs/model-card.md`](docs/model-card.md). Feature and dataset specifications are in [`docs/data-dictionary.md`](docs/data-dictionary.md).
 
@@ -28,9 +28,11 @@ Full analysis and recommendations are in [`docs/report.md`](docs/report.md). Per
 ├── data/                   # Raw features (Git LFS); heavy audio dirs gitignored
 │   ├── mfcc_features_{small,medium}.csv
 │   └── clap_features_{small,medium}.csv
-├── models/                 # Trained CNN weights
-│   ├── cnn_small.pt
-│   └── cnn_medium.pt
+├── models/                 # Trained CNN weights (one file per dataset × split)
+│   ├── cnn_small_random.pt
+│   ├── cnn_small_time.pt
+│   ├── cnn_medium_random.pt
+│   └── cnn_medium_time.pt
 ├── results/
 │   └── results.parquet     # All experiment results
 ├── docs/

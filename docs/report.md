@@ -8,11 +8,11 @@ This project evaluates automated genre classification on the Free Music Archive 
 
 ### What we found
 
-**CLAP embeddings are the clear winner.** A 512-dimensional embedding from the `laion/clap-htsat-unfused` model reaches macro F1 = 0.68 on the 7-genre small dataset, compared to 0.62 for the 518-dimensional FMA feature set and 0.53 for MFCCs. The gap comes despite requiring no domain-specific audio engineering — the model was pre-trained on 630k+ audio-text pairs and transfers well to genre labels.
+**CLAP embeddings win by a clear margin.** A 512-dimensional embedding from `laion/clap-htsat-unfused` reaches macro F1 = 0.68 on the 7-genre small dataset, versus 0.62 for the 518-dimensional FMA feature set and 0.53 for MFCCs. No domain-specific audio engineering required; the model was pre-trained on 630k+ audio-text pairs and the representations transfer well to genre labels.
 
-**Classical ML beats the CNN.** SVM and LightGBM with CLAP features reach F1 = 0.678 and 0.673 in 6–10 seconds of training. The CNN on mel spectrograms reaches 0.50 after 81 seconds. The 6,997-track small dataset is simply too small for the CNN to exploit its capacity. On the 23,634-track medium dataset, the gap narrows slightly (CNN reaches 0.34 vs. classical ML's 0.49), but classical models still dominate.
+**Classical ML beats the CNN.** SVM and LightGBM with CLAP features reach F1 = 0.678 and 0.673 in 6–10 seconds. The CNN on mel spectrograms reaches 0.503 after 75 seconds (small/random). On the 23,634-track medium dataset the gap widens: CNN reaches 0.303 vs. classical ML's 0.494. The CNN is also the only model that benefits from the time-based split rather than losing to it — small/time F1 = 0.540, medium/time F1 = 0.333, a gain of 3–4 pp opposite to every classical model. Raw spectrograms may be less coupled to the historical label distribution than pre-extracted statistics, but the margin is small enough that noise is a plausible explanation too.
 
-**The time-based split tells a different story.** Random 80/20 splits inflate reported performance. Switching to a time-ordered split — training on older tracks, testing on newer ones — drops F1 by 1–7 pp. CLAP is the most robust to this shift (< 3 pp); MFCC and full FMA features degrade more (−4–7 pp). The random-split numbers are the optimistic ceiling, not the deployment baseline.
+**Random splits are optimistic.** Switching to a time-ordered split — training on older tracks, testing on newer ones — drops F1 by 1–7 pp for classical models. CLAP holds up best (under 3 pp drop); MFCC and full FMA features fall more (4–7 pp). The CNN goes the other direction, picking up 3–4 pp. For classical models, treat random-split numbers as a ceiling, not a deployment estimate.
 
 **Pop is genuinely hard.** Across every model and feature set, Pop scores the lowest per-class F1: 0.39 with the best configuration. The other six genres sit between 0.62 and 0.78. Pop bleeds into Electronic, Rock, and Folk at its edges, and no amount of feature engineering resolves that without cleaner label boundaries.
 
@@ -20,17 +20,17 @@ This project evaluates automated genre classification on the Free Music Archive 
 
 ### Recommendations
 
-**Use CLAP embeddings.** Pre-compute with `laion/clap-htsat-unfused` (48 kHz input, 512-d output) once; every genre prediction after that is just a forward pass through a small classifier.
+**Use CLAP embeddings.** Pre-compute with `laion/clap-htsat-unfused` (48 kHz, 512-d output) once. Every prediction after that is a forward pass through a small classifier.
 
-**Deploy LightGBM rather than SVM at scale.** LightGBM comes within 1 pp of SVM's F1 on CLAP features, handles incremental re-training more easily, and produces SHAP values for per-track explanations. SVM with RBF kernel becomes expensive above ~20k samples.
+**Deploy LightGBM rather than SVM at scale.** LightGBM is within 1 pp of SVM's F1 on CLAP features, handles incremental re-training more easily, and produces SHAP values for per-track explanations. RBF SVM gets expensive above ~20k samples.
 
-**Fix the Pop label before adding model complexity.** Its F1 of 0.39 is unlikely to improve without either cleaner annotation or a hierarchical approach (binary Pop detector, then sub-genre). Adding more data or tuning hyperparameters will not resolve a label boundary problem.
+**Fix the Pop label before adding model complexity.** Its F1 of 0.39 won't improve without cleaner annotation or a hierarchical approach (binary Pop detector, then sub-genre). More data and hyperparameter tuning won't fix a label boundary problem.
 
-**Report time-split metrics in production monitoring.** The 1–7 pp gap between random and time-split F1 is what to expect as the catalogue adds newer tracks. Use the time-split number when setting expectations with stakeholders.
+**Report time-split metrics in production monitoring.** The 1–7 pp gap between random and time-split F1 is what to expect as the catalogue adds newer tracks. Use the time-split number when setting expectations.
 
-**Curate before scaling.** The performance drop from small to medium is mostly about poorly-separated minority genres, not model capacity. A curated dataset of 5–10k balanced tracks per genre would probably outperform raw scaling to 25k imbalanced ones.
+**Curate before scaling.** The performance drop from small to medium is mostly about poorly-separated minority genres, not model capacity. A curated 5–10k balanced tracks per genre would probably beat raw scaling to 25k imbalanced ones.
 
-**Fine-tuning CLAP would likely help most.** The current pipeline uses frozen embeddings. End-to-end fine-tuning on FMA-labelled audio would probably improve discrimination between adjacent genres (Electronic vs. Experimental, Folk vs. International), though it requires GPU infrastructure that was outside this project's scope.
+**Fine-tuning CLAP would likely help most.** The current pipeline uses frozen embeddings. End-to-end fine-tuning on FMA-labelled audio would probably improve discrimination between adjacent genres (Electronic vs. Experimental, Folk vs. International), but requires GPU infrastructure outside this project's scope.
 
 ### Limitations
 
@@ -70,7 +70,7 @@ All feature vectors for classical ML are reduced to 100 components via PCA (fit 
 
 ### C. Models and hyperparameter search
 
-Four classical ML models were evaluated: Logistic Regression, Random Forest (500 trees), SVM (RBF kernel for small, LinearSVC+Platt for medium), and LightGBM. Bayesian optimisation (Optuna TPE sampler, 10 trials, 2-fold stratified CV, objective: macro AUROC OVR) was applied to Logistic Regression, SVM, and LightGBM. Random Forest used fixed defaults.
+Four classical ML models were evaluated: Logistic Regression, Random Forest, SVM (RBF kernel for small, LinearSVC+Platt for medium), and LightGBM. Bayesian optimisation (Optuna TPE sampler, 10 trials, 2-fold stratified CV on up to 5,000 subsampled rows, objective: macro AUROC OVR) was applied to all four models. Search spaces: Logistic Regression C ∈ [0.01, 10] log-uniform; SVM C ∈ [0.1, 10] log-uniform; LightGBM n_estimators ∈ [100, 300], learning_rate ∈ [0.05, 0.2] log-uniform, num_leaves ∈ [31, 127]; Random Forest n_estimators ∈ [100, 500], max_depth ∈ [5, 30], min_samples_split ∈ [2, 10].
 
 CNN architecture:
 
@@ -104,18 +104,20 @@ Classical ML training and inference ran on CPU. CLAP embedding extraction and CN
 | ------------------- | --------------- | ------ | ------- | ----- | ----- |
 | SVM                 | CLAP (512d)     | random | small   | 0.678 | 0.925 |
 | LightGBM            | CLAP (512d)     | random | small   | 0.673 | 0.918 |
-| Random Forest       | CLAP (512d)     | random | small   | 0.667 | 0.919 |
 | Logistic Regression | CLAP (512d)     | random | small   | 0.658 | 0.917 |
+| Random Forest       | CLAP (512d)     | random | small   | 0.658 | 0.916 |
+| LightGBM            | CLAP (512d)     | time   | small   | 0.661 | 0.906 |
 | SVM                 | CLAP (512d)     | time   | small   | 0.651 | 0.910 |
-| Logistic Regression | CLAP (512d)     | time   | small   | 0.647 | 0.908 |
+| Logistic Regression | CLAP (512d)     | time   | small   | 0.648 | 0.908 |
 | SVM                 | Full (518d)     | random | small   | 0.619 | 0.897 |
-| SVM                 | MFCC (140d)     | random | small   | 0.534 | 0.852 |
-| CNN                 | Mel spectrogram | random | small   | 0.498 | 0.853 |
+| CNN                 | Mel spectrogram | time   | small   | 0.540 | 0.867 |
+| CNN                 | Mel spectrogram | random | small   | 0.503 | 0.858 |
 | Logistic Regression | CLAP (512d)     | random | medium  | 0.494 | 0.944 |
 | LightGBM            | CLAP (512d)     | random | medium  | 0.478 | 0.927 |
-| CNN                 | Mel spectrogram | random | medium  | 0.336 | 0.883 |
+| CNN                 | Mel spectrogram | time   | medium  | 0.333 | 0.865 |
+| CNN                 | Mel spectrogram | random | medium  | 0.303 | 0.861 |
 
-Full results across all 50 configurations are in `results/results.parquet`.
+Full results across all 52 configurations are in `results/results.parquet`.
 
 ### F. Per-genre F1 (SVM + CLAP, small/random)
 
@@ -131,13 +133,16 @@ Full results across all 50 configurations are in `results/results.parquet`.
 
 ### G. Time-split degradation (small dataset)
 
-| Feature set | Model    | Random F1 | Time F1 | Delta  |
-| ----------- | -------- | --------- | ------- | ------ |
-| Full (518d) | LightGBM | 0.594     | 0.528   | −0.065 |
-| Full (518d) | SVM      | 0.619     | 0.558   | −0.061 |
-| MFCC (140d) | SVM      | 0.534     | 0.493   | −0.041 |
-| CLAP (512d) | SVM      | 0.678     | 0.651   | −0.027 |
-| CLAP (512d) | LightGBM | 0.673     | 0.661   | −0.012 |
+Delta = time F1 − random F1. Negative means random split is optimistic; positive means time split is better.
+
+| Feature set     | Model    | Random F1 | Time F1 | Delta  |
+| --------------- | -------- | --------- | ------- | ------ |
+| Full (518d)     | LightGBM | 0.594     | 0.528   | −0.065 |
+| Full (518d)     | SVM      | 0.619     | 0.558   | −0.061 |
+| MFCC (140d)     | SVM      | 0.534     | 0.493   | −0.041 |
+| CLAP (512d)     | SVM      | 0.678     | 0.651   | −0.027 |
+| CLAP (512d)     | LightGBM | 0.673     | 0.661   | −0.012 |
+| Mel spectrogram | CNN      | 0.503     | 0.540   | +0.037 |
 
 ### H. Reproduction checklist
 

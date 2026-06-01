@@ -35,7 +35,7 @@ The notebook (`notebook.ipynb`) implements all nine pipeline steps. It benchmark
 | Model card             | [`docs/model-card.md`](model-card.md)           |
 | Report                 | [`docs/report.md`](report.md)                   |
 | Pre-computed features  | `data/` (Git LFS)                               |
-| Trained model weights  | `models/cnn_{small,medium}.pt`                  |
+| Trained model weights  | `models/cnn_{small,medium}_{random,time}.pt`    |
 | All experiment results | `results/results.parquet`                       |
 
 ## Design decisions
