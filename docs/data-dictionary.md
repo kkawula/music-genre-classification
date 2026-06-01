@@ -21,7 +21,7 @@ The paper's own baselines on the small dataset: LR with L2 penalty, kNN (k=200),
 | fma_small  | 8,000  | 8                  | ~7.2 GB      |
 | fma_medium | 25,000 | 16                 | ~22 GB       |
 
-After cleaning (removing tracks with missing MFCC values and the _Instrumental_ catch-all category):
+After cleaning (removing tracks with missing MFCC values and the _Instrumental_ category):
 
 | Subset | Clean tracks | Train  | Test  |
 | ------ | ------------ | ------ | ----- |
